@@ -22,11 +22,9 @@ class ReservationController extends AbstractController
     ) {
     }
 
-    public function __invoke(Request $request, Reservation $reservation): Reservation
+    public function __invoke(Request $request): Reservation
     {
         $data = json_decode($request->getContent());
-
-        // $reservation = new Reservation();
 
         if ($request->isMethod('POST')) {
             $car = new Car();
@@ -88,6 +86,9 @@ class ReservationController extends AbstractController
 
             $this->entityManager->flush();
         } else if ($request->isMethod('PATCH')) {
+
+            $reservation = $this->entityManager->getRepository(Reservation::class)->find($request->get('id'));
+
             $reservation->setStatus($data->status);
             $this->entityManager->persist($reservation);
 
