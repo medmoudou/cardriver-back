@@ -52,7 +52,7 @@ class InvoiceController extends AbstractController
             'isPro' => $user->getProfessional() ? true : false,
             'totalHT' => $order->getPriceHT(),
             'TVA' => ($order->getPriceHT() * (20 / 100)),
-            'totalTTC' => $order->getPrice(),
+            'totalTTC' => $order->getPriceTTC(),
         ]);
     }
 }

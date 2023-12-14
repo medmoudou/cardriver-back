@@ -7,11 +7,16 @@ use App\Entity\Address;
 use App\Entity\Car;
 use App\Entity\Reservation;
 use App\Entity\Track;
+use App\Entity\User;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security as SecurityBundleSecurity;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address as EmailAddress;
+use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
 class ReservationController extends AbstractController
 {
@@ -22,7 +27,7 @@ class ReservationController extends AbstractController
     ) {
     }
 
-    public function __invoke(Request $request): Reservation
+    public function __invoke(#[CurrentUser] ?User $user, Request $request, MailerInterface $mailer): Reservation
     {
         $data = json_decode($request->getContent());
 
@@ -70,6 +75,7 @@ class ReservationController extends AbstractController
             $reservation->setPriceHT($data->reservation->priceHT);
             $reservation->setPriceTTC($data->reservation->priceTTC);
             $reservation->setCreatedAt(new DateTimeImmutable());
+
             $this->entityManager->persist($reservation);
 
             $track = new Track();
@@ -83,12 +89,25 @@ class ReservationController extends AbstractController
                 $track->setDetails('Paiement effectué');
                 $this->entityManager->persist($track);
             }
-
             $this->entityManager->flush();
+
+            if ($reservation->getId()) {
+                $message = (new TemplatedEmail())
+                    ->from(new EmailAddress('contact@cardriver-solutions.fr', 'Car Driver Solutions'))
+                    ->to($user->getEmail())
+                    ->subject('Votre commande est en cours de traitement #' . $reservation->getId())
+                    ->htmlTemplate('emails/confirmation.html.twig')
+                    ->context([
+                        'user_name' => $user->getUserType() === 'individual' ? ($user->getIndividual()->getFirstname() . ' ' . $user->getIndividual()->getLastname()) : ($user->getProfessional() ? $user->getProfessional()->getSocietyName() : ''),
+                        'order' => $reservation->getId(),
+                        'immatriculation' => $reservation->getCar()->getImmatriculation(),
+                    ]);
+                $mailer->send($message);
+            }
         } else if ($request->isMethod('PATCH')) {
 
             $reservation = $this->entityManager->getRepository(Reservation::class)->find($request->get('id'));
-
+            $tracks = $reservation->getTracks()->toArray();
             $reservation->setStatus($data->status);
             $this->entityManager->persist($reservation);
 
@@ -98,15 +117,73 @@ class ReservationController extends AbstractController
                 $track->setDetails('Paiement effectué');
             } else if ($data->status == 'CONFIRMED') {
                 $track->setDetails('Commande confirmée');
+                $message = (new TemplatedEmail())
+                    ->from(new EmailAddress('contact@cardriver-solutions.fr', 'Car Driver Solutions'))
+                    ->to($reservation->getOwner()->getEmail())
+                    ->subject('Confirmation de votre commande #' . $reservation->getId())
+                    ->htmlTemplate('emails/confirmed.html.twig')
+                    ->context([
+                        'user_name' => $reservation->getOwner()->getUserType() === 'individual' ? ($reservation->getOwner()->getIndividual()->getFirstname() . ' ' . $reservation->getOwner()->getIndividual()->getLastname()) : ($reservation->getOwner()->getProfessional() ? $reservation->getOwner()->getProfessional()->getSocietyName() : ''),
+                        'date_confirmation' => (new \DateTime())->format('d/m/Y - H:i'),
+                        'immatriculation' => $reservation->getCar()->getImmatriculation(),
+                    ]);
+                $mailer->send($message);
             } else if ($data->status == 'COLLECTED') {
+
                 $track->setDetails('Véhicule récuperé');
+
+                $confirmationDate = '';
+                foreach ($tracks as $t) {
+                    if ($t->getDetails() === 'Commande confirmée') {
+                        $confirmationDate = $t->getCreatedAt()->format('d/m/Y - H:i');
+                    }
+                }
+
+                $message = (new TemplatedEmail())
+                    ->from(new EmailAddress('contact@cardriver-solutions.fr', 'Car Driver Solutions'))
+                    ->to($reservation->getOwner()->getEmail())
+                    ->subject('Votre véhicule est en chemin #' . $reservation->getId())
+                    ->htmlTemplate('emails/collected.html.twig')
+                    ->context([
+                        'user_name' => $reservation->getOwner()->getUserType() === 'individual' ? ($reservation->getOwner()->getIndividual()->getFirstname() . ' ' . $reservation->getOwner()->getIndividual()->getLastname()) : ($reservation->getOwner()->getProfessional() ? $reservation->getOwner()->getProfessional()->getSocietyName() : ''),
+                        'date_collect' => (new \DateTime())->format('d/m/Y - H:i'),
+                        'date_confirmation' => $confirmationDate,
+                        'immatriculation' => $reservation->getCar()->getImmatriculation(),
+                    ]);
+                $mailer->send($message);
             } else if ($data->status == 'DELIVERED') {
                 $track->setDetails('Véhicule livré');
+
+                $collectDate = '';
+                $confirmationDate = '';
+                foreach ($tracks as $t) {
+
+                    if ($t->getDetails() === 'Véhicule récuperé') {
+                        $collectDate = $t->getCreatedAt()->format('d/m/Y - H:i');
+                    }
+
+                    if ($t->getDetails() === 'Commande confirmée') {
+                        $confirmationDate = $t->getCreatedAt()->format('d/m/Y - H:i');
+                    }
+                }
+
+                $message = (new TemplatedEmail())
+                    ->from(new EmailAddress('contact@cardriver-solutions.fr', 'Car Driver Solutions'))
+                    ->to($reservation->getOwner()->getEmail())
+                    ->subject('Votre véhicule est livré #' . $reservation->getId())
+                    ->htmlTemplate('emails/delivered.html.twig')
+                    ->context([
+                        'user_name' => $reservation->getOwner()->getUserType() === 'individual' ? ($reservation->getOwner()->getIndividual()->getFirstname() . ' ' . $reservation->getOwner()->getIndividual()->getLastname()) : ($reservation->getOwner()->getProfessional() ? $reservation->getOwner()->getProfessional()->getSocietyName() : ''),
+                        'date_delivery' => (new \DateTime())->format('d/m/Y - H:i'),
+                        'date_collect' => $collectDate,
+                        'date_confirmation' => $confirmationDate,
+                        'immatriculation' => $reservation->getCar()->getImmatriculation(),
+                    ]);
+                $mailer->send($message);
             } else if ($data->status == 'CANCELED') {
                 $track->setDetails('Commande annulée');
             }
             $this->entityManager->persist($track);
-
             $this->entityManager->flush();
         }
 

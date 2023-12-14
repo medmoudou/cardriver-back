@@ -19,19 +19,19 @@ class Car
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups('reservation:read')]
+    #[Groups(['reservation:read', 'user:read'])]
     private ?string $immatriculation = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups('reservation:read')]
+    #[Groups(['reservation:read', 'user:read'])]
     private ?string $engine = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups('reservation:read')]
+    #[Groups(['reservation:read', 'user:read'])]
     private ?string $model = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups('reservation:read')]
+    #[Groups(['reservation:read', 'user:read'])]
     private ?string $type = null;
 
     #[ORM\Column]

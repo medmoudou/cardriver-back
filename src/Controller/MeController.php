@@ -23,7 +23,7 @@ class MeController extends AbstractController
     #[Route('/api/me/reservations', name: 'app_me_reservations')]
     public function reservations(#[CurrentUser] ?User $user, SerializerInterface $serializer)
     {
-        $data = $serializer->serialize($user->getReservations(), JsonEncoder::FORMAT);
+        $data = $serializer->serialize($user->getReservations(), JsonEncoder::FORMAT, ["groups" => "user:read"]);
         return new JsonResponse($data, Response::HTTP_OK, [], true);
     }
 }

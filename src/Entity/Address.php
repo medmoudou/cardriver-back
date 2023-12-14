@@ -17,35 +17,35 @@ class Address
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups('reservation:read')]
+    #[Groups(['reservation:read', 'user:read'])]
     private ?string $firstname = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups('reservation:read')]
+    #[Groups(['reservation:read', 'user:read'])]
     private ?string $lastname = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups('reservation:read')]
+    #[Groups(['reservation:read', 'user:read'])]
     private ?string $email = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups('reservation:read')]
+    #[Groups(['reservation:read', 'user:read'])]
     private ?string $phone = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups('reservation:read')]
+    #[Groups(['reservation:read', 'user:read'])]
     private ?string $address = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups('reservation:read')]
+    #[Groups(['reservation:read', 'user:read'])]
     private ?string $zipcode = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups('reservation:read')]
+    #[Groups(['reservation:read', 'user:read'])]
     private ?string $city = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups('reservation:read')]
+    #[Groups(['reservation:read', 'user:read'])]
     private ?string $country = null;
 
     #[ORM\Column]

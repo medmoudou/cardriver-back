@@ -59,62 +59,62 @@ class Reservation
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups('reservation:read')]
+    #[Groups(['reservation:read', 'user:read'])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'reservations')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups('reservation:read')]
+    #[Groups(['reservation:read', 'user:read'])]
     private ?User $owner = null;
 
     #[ORM\OneToOne(cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups('reservation:read')]
+    #[Groups(['reservation:read', 'user:read'])]
     private ?Address $addressFrom = null;
 
     #[ORM\OneToOne(cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups('reservation:read')]
+    #[Groups(['reservation:read', 'user:read'])]
     private ?Address $addressTo = null;
 
     #[ORM\ManyToOne(inversedBy: 'reservations')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups('reservation:read')]
+    #[Groups(['reservation:read', 'user:read'])]
     private ?Car $car = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    #[Groups('reservation:read')]
+    #[Groups(['reservation:read', 'user:read'])]
     private ?\DateTimeInterface $availableFrom = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    #[Groups('reservation:read')]
+    #[Groups(['reservation:read', 'user:read'])]
     private ?\DateTimeInterface $availableTo = null;
 
     #[ORM\Column]
-    #[Groups('reservation:read')]
+    #[Groups(['reservation:read', 'user:read'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups('reservation:read')]
+    #[Groups(['reservation:read', 'user:read'])]
     private ?string $paymentMethod = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups('reservation:read')]
+    #[Groups(['reservation:read', 'user:read'])]
     private ?string $status = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups('reservation:read')]
+    #[Groups(['reservation:read', 'user:read'])]
     private ?string $price = null;
 
     #[ORM\Column]
-    #[Groups('reservation:read')]
+    #[Groups(['reservation:read', 'user:read'])]
     private ?float $priceHT = null;
 
     #[ORM\Column]
-    #[Groups('reservation:read')]
+    #[Groups(['reservation:read', 'user:read'])]
     private ?float $priceTTC = null;
 
-    #[Groups('reservation:read')]
+    #[Groups(['reservation:read', 'user:read'])]
     #[ORM\OneToMany(mappedBy: 'reservation', targetEntity: Track::class)]
     private Collection $tracks;
 

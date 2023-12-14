@@ -8,6 +8,10 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use GuzzleHttp\Client;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\Component\Mime\Address;
 
 class DistanceController extends AbstractController
 {
@@ -17,7 +21,7 @@ class DistanceController extends AbstractController
         $client = new Client();
         $data = json_decode($request->getContent(), true);
         $requestUrl = "https://api.openrouteservice.org/v2/matrix/driving-car";
-
+        $vtype = $data['vtype'];
         $data = [
             'locations' => [$data['from'], $data['to']],
             'metrics' => ['distance'],
@@ -36,10 +40,26 @@ class DistanceController extends AbstractController
 
             $result = json_decode($response->getBody()->getContents(), true);
 
-            // return new JsonResponse($result);
             if ($result !== null && isset($result['distances'][0][1])) {
                 $distance = $result['distances'][0][1];
                 $price = $this->calculatePrice($distance);
+
+                if ($vtype == 6) {
+                    $price *= 1.03;
+                } elseif ($vtype == 7) {
+                    $price *= 1.03;
+                } elseif ($vtype == 8) {
+                    $price *= 1.07;
+                } elseif ($vtype == 9) {
+                    $price *= 1.11;
+                } elseif ($vtype == 10) {
+                    $price *= 1.166;
+                } elseif ($vtype == 11) {
+                    $price *= 1.27;
+                } elseif ($vtype == 12) {
+                    $price *= 1.38;
+                }
+
                 return new JsonResponse(array(
                     'distance' => $distance,
                     'price_HT' => round($price),
@@ -47,7 +67,7 @@ class DistanceController extends AbstractController
                 ));
             }
         } catch (\Exception $e) {
-            // Handle the API request error
+            echo $e;
         }
 
         return null;

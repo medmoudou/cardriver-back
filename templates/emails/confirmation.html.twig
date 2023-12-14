@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bienvenue chez Car Driver Solutions !</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-size: 14px;
+            font-family: 'Roboto', Verdana, sans-serif !important;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background-color: #edf1f7;
+            line-height: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            border-top: #2a9d8f 3px solid;
+        }
+
+        h3 {
+            text-align: center;
+            padding: 20px;
+            font-family: 'Roboto', Verdana, sans-serif;
+        }
+
+        p {
+            font-family: 'Roboto', Verdana, sans-serif;
+            margin-bottom: 15px;
+            font-size: 14px !important;
+        }
+
+        li {
+            font-family: 'Roboto', Verdana, sans-serif;
+            font-size: 14px !important;
+
+        }
+
+        .header {
+            text-align: center;
+            padding: 10px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 10px;
+            font-size: 10px;
+        }
+
+        .btn {
+            color: white !important;
+            background-color: #2a9d8f;
+            border: none;
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 0 auto;
+            text-decoration: none;
+            border-bottom: #1d7066 3px solid;
+        }
+    </style>
+</head>
+
+<body>
+
+    <table role="presentation" cellspacing="0" cellpadding="0" width="100%" style="margin: auto;">
+        <tr>
+            <td class="header">
+                <img width="200px" src="https://api.cardriver-solutions.fr/assets/images/logo.png"
+                    alt="Logo de Car Driver Solutions" style="max-width: 100%;">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <div class="container" style="padding: 10px;">
+                    <p>Bonjour {{user_name}},</p>
+                    <p>Nous vous confirmons la réception de votre commande de convoyage avec les détails suivants :</p>
+                    <ul>
+                        <li>Numéro de commande : <b>#{{order}}</b></li>
+                        <li>Immatriculation : <b>{{immatriculation}}</b></li>
+                    </ul>
+                    <p>Votre commande est actuellement en cours de traitement. Nous vous fournirons des mises à jour
+                        régulières sur son avancement.</p>
+                    <p>
+                        <i><small>Si vous avez des questions ou besoin d'assistance, n'hésitez pas à nous contacter à
+                                contact@cardriver-solutions.fr.</small></i>
+                    </p>
+                    <p>Cordialement,<br>L'équipe de Car Driver Solutions</p>
+                </div>
+
+            </td>
+        </tr>
+        <tr>
+            <td class="footer">
+                <p><small>CAR DRIVER SOLUTIONS - 10 RUE DE PENTHIEVRE 75008 PARIS</small></p>
+            </td>
+        </tr>
+    </table>
+
+</body>
+
+</html>

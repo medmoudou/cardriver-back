@@ -9,10 +9,15 @@ use App\Entity\User;
 use App\Repository\UserRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Mime\Address;
+use Symfony\Component\Routing\Annotation\Route;
 
 class UserController extends AbstractController
 {
@@ -25,7 +30,7 @@ class UserController extends AbstractController
     ) {
     }
 
-    public function __invoke(Request $request, string $id = null)
+    public function __invoke(Request $request, string $id = null, MailerInterface $mailer)
     {
         if ($request->isMethod('POST')) {
 
@@ -59,8 +64,19 @@ class UserController extends AbstractController
                 throw new BadRequestHttpException("Invalid user type");
             }
 
-            // $this->entityManager->persist($user);
             $this->entityManager->flush($user);
+
+            if ($user->getId()) {
+                $email = (new TemplatedEmail())
+                    ->from(new Address('contact@cardriver-solutions.fr', 'Car Driver Solutions'))
+                    ->to($reqData['email'])
+                    ->subject('Bienvenue chez Car Driver Solutions !')
+                    ->htmlTemplate('emails/welcome.html.twig')
+                    ->context([
+                        'user_name' => $user->getUserType() === 'individual' ? $reqData['firstname'] . ' ' . $reqData['lastname'] : $reqData['society']
+                    ]);
+                $mailer->send($email);
+            }
 
             return $user;
         } else if ($request->isMethod('GET')) {
@@ -133,6 +149,30 @@ class UserController extends AbstractController
             $this->entityManager->flush();
 
             return $user;
+        }
+    }
+
+    #[Route('/api/contact', name: 'app_contact')]
+    public function index(Request $request, MailerInterface $mailer): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $email = (new TemplatedEmail())
+            ->from(new Address('contact@cardriver-solutions.fr', 'Car Driver Solutions'))
+            ->to(new Address('contact@cardriver-solutions.fr', 'Car Driver Solutions'))
+            ->replyTo($data['email'])
+            ->subject('Vous avez un nouveau message')
+            ->html('<p>' . $data['email'] . '</p>');
+
+        try {
+            $mailer->send($email);
+
+            if ($email) {
+                return new JsonResponse(['status' => 'sent']);
+            } else {
+                return new JsonResponse(['status' => 'failed']);
+            }
+        } catch (\Throwable $th) {
+            return new JsonResponse(['status' => $th]);
         }
     }
 }
